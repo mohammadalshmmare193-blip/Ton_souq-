@@ -2,23 +2,6 @@ import os
 import time
 import requests
 from datetime import datetime
-from flask import Flask
-from threading import Thread
-
-# تشغيل خادم ويب وهمي للحفاظ على السيرفر نشطاً طوال الوقت (يمنع نوم Render)
-app = Flask('')
-
-@app.route('/')
-def home():
-    return "Bot is running 24/7!"
-
-def run_web():
-    app.run(host='0.0.0.0', port=8080)
-
-def keep_alive():
-    t = Thread(target=run_web)
-    t.daemon = True
-    t.start()
 
 # سحب التوكن والمعرف من متغيرات البيئة بأمان تام
 TOKEN = os.getenv("BOT_TOKEN")
@@ -106,8 +89,7 @@ def send_ton_message(item):
         pass
 
 def main():
-    keep_alive()  # تفعيل السيرفر الوهمي للبقاء نشطاً
-    print("تم تشغيل بوت سهم TON بنجاح على السيرفر السحابي (تحديث كل 5 دقائق)...")
+    print("بدء تشغيل بوت سهم TON كـ Background Worker...")
     while True:
         try:
             ton_data = fetch_ton_data()
@@ -116,9 +98,8 @@ def main():
         except Exception as e:
             print(f"خطأ: {e}")
 
-        # الانتظار لمدة 5 دقائق (300 ثانية) بدلاً من ساعة كاملة
-        for i in range(300):
-            time.sleep(1)
+        # الانتظار لمدة 5 دقائق (300 ثانية)
+        time.sleep(300)
 
 if __name__ == "__main__":
     main()
