@@ -2,6 +2,23 @@ import os
 import time
 import requests
 from datetime import datetime
+from flask import Flask
+from threading import Thread
+
+# تشغيل خادم ويب وهمي للحفاظ على السيرفر نشطاً طوال الوقت (يمنع نوم Render)
+app = Flask('')
+
+@app.route('/')
+def home():
+    return "Bot is running 24/7!"
+
+def run_web():
+    app.run(host='0.0.0.0', port=8080)
+
+def keep_alive():
+    t = Thread(target=run_web)
+    t.daemon = True
+    t.start()
 
 # سحب التوكن والمعرف من متغيرات البيئة بأمان تام
 TOKEN = os.getenv("BOT_TOKEN")
@@ -37,10 +54,9 @@ def generate_progress_bar(change_val):
         return "⚪ ░░░░░"
 
 def fetch_ton_data():
-    current_usd = 1.40  # سعر افتراضي في حال انقطاع واجهة البيانات
+    current_usd = 1.40  
     change_24h = 0.0
     
-    # أسعار الصرف المحدثة والمضبوطة وفقاً لآخر بيانات السوق الرسمي والمحلي في العراق
     iqd_rate = 1520   # السعر الرسمي المحدث للبنك المركزي
     asia_rate = 1580  # سعر التحويلات أو أسياسيل التقريبي بناءً على السوق
     
@@ -90,7 +106,8 @@ def send_ton_message(item):
         pass
 
 def main():
-    print("تم تشغيل بوت سهم TON بنجاح على السيرفر السحابي...")
+    keep_alive()  # تفعيل السيرفر الوهمي للبقاء نشطاً
+    print("تم تشغيل بوت سهم TON بنجاح على السيرفر السحابي (تحديث كل 5 دقائق)...")
     while True:
         try:
             ton_data = fetch_ton_data()
@@ -99,7 +116,8 @@ def main():
         except Exception as e:
             print(f"خطأ: {e}")
 
-        for i in range(3600):
+        # الانتظار لمدة 5 دقائق (300 ثانية) بدلاً من ساعة كاملة
+        for i in range(300):
             time.sleep(1)
 
 if __name__ == "__main__":
